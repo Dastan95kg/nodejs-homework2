@@ -1,4 +1,5 @@
 import express from "express";
+import { userValidator, userSchema } from "../validation/userValidator.js";
 const router = express.Router();
 
 let users = [
@@ -44,8 +45,11 @@ router.get("/", (req, res) => {
   const { loginSubstring = "", limit = 10 } = req.query;
 
   const autoSuggestedUsers = users
-    .filter((user) => user.login.includes(loginSubstring))
-    .sort((a, b) => (a.login.toLowerCase() > b.login.toLowerCase() ? 1 : -1));
+    .filter((user) =>
+      user.login.toLowerCase().includes(loginSubstring.toLowerCase())
+    )
+    .sort((a, b) => (a.login.toLowerCase() > b.login.toLowerCase() ? 1 : -1))
+    .slice(0, Number(limit));
 
   res.status(200).json(autoSuggestedUsers);
 });
@@ -61,12 +65,8 @@ router.get("/:id", (req, res) => {
 });
 
 // CREATE
-router.post("/", (req, res) => {
+router.post("/", userValidator.body(userSchema), (req, res) => {
   const { login, password, age } = req.body;
-
-  if (!login || !password || !age) {
-    throw new Error("No enough user data");
-  }
 
   const userIds = users.map((user) => user.id);
   const newId = Math.max.apply(Math, userIds) + 1;
@@ -85,12 +85,8 @@ router.post("/", (req, res) => {
 });
 
 // UPDATE
-router.put("/:id", (req, res) => {
+router.put("/:id", userValidator.body(userSchema), (req, res) => {
   const { login, password, age } = req.body;
-
-  if (!login || !password || !age) {
-    throw new Error("No enough user data");
-  }
 
   const foundUser = users.find((user) => user.id === req.params.id);
 
