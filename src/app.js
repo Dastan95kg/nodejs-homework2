@@ -1,18 +1,14 @@
-import express from "express";
-import http from "http";
-import usersRoutes from "./routes/users.js";
+import initEnvironment from "./loaders/index.js";
+import server from "./loaders/express.js";
 
-const port = 3000;
-const app = express();
+async function startServer() {
+  const port = 3000;
 
-app.use(express.json());
+  await initEnvironment();
 
-app.use("/users", usersRoutes);
+  server.listen(port, () => {
+    console.log(`Server is ready and listening on port ${port}`);
+  });
+}
 
-// Default Url
-app.use("/", (req, res) => {
-  res.send("node app works");
-});
-
-const server = http.createServer(app);
-server.listen(port);
+startServer();
